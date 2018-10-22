@@ -2,12 +2,12 @@
 const path = require('path');
 const fs = require('fs');
 
-const ejs = require('ejs');
+const pug = require('pug');
 
-const EJS_EXTENSION_REGEX = /.ejs$/;
+const PUG_EXTENSION_REGEX = /.pug$/;
 
 /**
- * Node program is used to process ejs and is highly configurable
+ * Node program is used to process pug and is highly configurable
  */
 (async function() {
   // Get arguments
@@ -16,39 +16,39 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
   const optsFileName = process.argv[4];
 
   // Get options
-  let ejsOptions;
+  let pugOptions;
   try {
-    ejsOptions = require(optsFileName);
+    pugOptions = require(optsFileName);
   } catch (e) {
-    console.error('ERROR GETTING EJS OPTIONS');
+    console.error('ERROR GETTING PUG OPTIONS');
     console.error(e);
     throw e;
   }
 
   // Force async
-  if (!ejsOptions) console.warn('Async required for operation - enabling');
-  ejsOptions.async = true;
+  if (!pugOptions) console.warn('Async required for operation - enabling');
+  pugOptions.async = true;
 
-  // Get all ejs files in the root of the inDir
+  // Get all pug files in the root of the inDir
   console.log('Getting filenames...\n');
-  let ejsFilenames = fs.readdirSync(inDir).filter((file) => EJS_EXTENSION_REGEX.test(file));
+  let pugFilenames = fs.readdirSync(inDir).filter((file) => PUG_EXTENSION_REGEX.test(file));
 
-  if (ejsFilenames.length === 0) {
-    // There weren't any ejs files. Abort
-    console.log('No EJS files found. Aborting operation\n');
+  if (pugFilenames.length === 0) {
+    // There weren't any pug files. Abort
+    console.log('No PUG files found. Aborting operation\n');
     return;
   }
 
   // Render all the files found
-  console.log('Rendering EJS..\n');
-  let renderPromises = ejsFilenames.map((filename) => {
+  console.log('Rendering PUG..\n');
+  let renderPromises = pugFilenames.map(async (filename) => {
     // Get the styling
     let style;
     try {
       // This match separates the file path from the file name
-      style = fs.readFileSync(`./.pre_build/${filename.match(/(.+)\.ejs/)[1]}.css`);
+      style = fs.readFileSync(`./.pre_build/${filename.match(/(.+)\.pug$/)[1]}.css`);
     } catch (e) {
-      // If no styling was found using the ejs filename, get the generic 'style' sheet
+      // If no styling was found using the pug filename, get the generic 'style' sheet
       console.log(`INFO: Could not find matching CSS file for ${filename}, using generic style...`);
       try {
         style = fs.readFileSync('./.pre_build/style.css');
@@ -58,15 +58,19 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
         style = '';
       }
     }
-    return ejs.renderFile(path.join(inDir, filename), {style: style}, ejsOptions);
+    pugOptions.style = style;
+    pugOptions.filename = filename;
+
+    // All PUG operations are synchronous. The return value will automatically be wrapped in a promise result
+    return pug.renderFile(path.join(inDir, filename), pugOptions);
   });
   let rendered = await Promise.all(renderPromises);
 
   // Save all the files
   console.log('Writing HTML..\n');
   let writePromises = rendered.map((htmlString, index) => {
-    // Alter the ejs filename to an html extension
-    let filename = ejsFilenames[index].replace(EJS_EXTENSION_REGEX, '.html');
+    // Alter the pug filename to an html extension
+    let filename = pugFilenames[index].replace(PUG_EXTENSION_REGEX, '.html');
 
     return new Promise((resolve, reject) => {
       fs.writeFile(path.join(outDir, filename), htmlString, (err) => {
@@ -80,5 +84,5 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
   });
   await Promise.all(writePromises);
 
-  console.log('EJS Rendering Complete!\n');
+  console.log('PUG Rendering Complete!\n');
 })();

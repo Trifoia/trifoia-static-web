@@ -20,10 +20,14 @@ scss:
 ejs:
 	node render_ejs.js ./src/ejs/ ./build/ ./config/ejs_options.js
 
+# Renders PUG into HTML
+pug:
+	node render_pug.js ./src/pug/ ./build/ ./config/pug_options.js
+
 # Copies image files
 image:
 	cp images/ build/ -r
 
 # Performs all build tasks
-build: clean scss ejs image
+build: install clean scss ejs pug image
 	@echo Build Complete! Took $(shell expr $(shell date +%s) - $(START_TIME)) seconds
