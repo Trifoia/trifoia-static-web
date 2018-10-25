@@ -10,6 +10,10 @@ clean:
 	rm -rf ./build/*
 	rm -rf ./.pre_build/*
 
+# Lints all files, and attempts to fix any that it can
+lint:
+	node ./node_modules/.bin/eslint . --fix
+
 # Renders SCSS into CSS
 scss:
 	node render_scss.js ./src/scss/ ./.pre_build/ ./config/scss_options.js
@@ -29,7 +33,7 @@ image:
 	cp images/ build/ -r
 
 # Performs all build tasks
-build: install clean scss ejs pug image
+build: install lint clean scss ejs pug image
 
 # Performs all build tasks without installing anything
-build-noinstall: clean scss ejs pug image
+build-noinstall: lint clean scss ejs pug image

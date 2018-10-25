@@ -1,6 +1,5 @@
 'use strict';
 const path = require('path');
-const fs = require('fs');
 
 const ejs = require('ejs');
 const FileUtil = require('./lib/file-util.js');
@@ -44,26 +43,33 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
     return;
   }
 
+  // Get all the previously rendered stylesheets
+  console.log('Retrieving Stylesheets...\n');
+  let cssFilenames = await FileUtil.getDirRecursive('./.pre_build');
+
+  // Filter out non-css filenames and get files
+  cssFilenames = cssFilenames.filter((filename) => FileUtil.getExtname(filename) === 'css');
+  let readPromises = cssFilenames.map((filename) => FileUtil.readFile(filename).then((buff) => {
+    // Automatically convert the buffer to a string
+    return buff.toString();
+  }));
+  let styleArray = await Promise.all(readPromises);
+
+  // The style Array is, by definition, parallel to the cssFilenames array. Use this fact to organize the styles into
+  // an object
+  let styles = {};
+  styleArray.forEach((style, index) => {
+    let cssFilename = cssFilenames[index];
+
+    // Split the css filename into its directories, removing the '.prebuild' dir, then join them back together again
+    cssFilename = cssFilename.split(path.sep).slice(1).join(path.sep);
+    styles[cssFilename] = style;
+  });
+
   // Render all the files found
   console.log('Rendering EJS..\n');
   let renderPromises = ejsFilenames.map((filename) => {
-    // Get the styling
-    let style;
-    try {
-      // This match separates the file path from the file name
-      style = fs.readFileSync(`./.pre_build/${filename.match(/(.+)\.ejs/)[1]}.css`);
-    } catch (e) {
-      // If no styling was found using the ejs filename, get the generic 'style' sheet
-      console.log(`INFO: Could not find matching CSS file for ${filename}, using generic style...`);
-      try {
-        style = fs.readFileSync('./.pre_build/style.css');
-      } catch (e) {
-        // There is no style information
-        console.log(`INFO: Could not find generic stylesheet. ${filename} will be rendered with no styling`);
-        style = '';
-      }
-    }
-    return ejs.renderFile(path.join(inDir, filename), {style: style}, ejsOptions);
+    return ejs.renderFile(path.join(inDir, filename), {styles: styles}, ejsOptions);
   });
   let rendered = await Promise.all(renderPromises);
 

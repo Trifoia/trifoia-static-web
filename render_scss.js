@@ -59,7 +59,7 @@ const SCSS_EXTENSION_REGEX = /.scss$/;
     // Alter the scss filename to an css extension
     let filename = scssFilenames[index].replace(SCSS_EXTENSION_REGEX, '.css');
 
-    return FileUtil.makeFile(path.join(outDir, filename), css);
+    return FileUtil.makeFile(path.join(outDir, filename), css.css);
   });
   await Promise.all(writePromises);
 
