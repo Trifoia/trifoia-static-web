@@ -1,8 +1,8 @@
 'use strict';
 const path = require('path');
-const fs = require('fs');
 
 const sass = require('node-sass');
+const FileUtil = require('./lib/file-util.js');
 
 const SCSS_EXTENSION_REGEX = /.scss$/;
 
@@ -27,7 +27,11 @@ const SCSS_EXTENSION_REGEX = /.scss$/;
 
   // Get all scss files in the root of the inDir
   console.log('Getting filenames...\n');
-  let scssFilenames = fs.readdirSync(inDir).filter((file) => SCSS_EXTENSION_REGEX.test(file));
+  let scssFilenames = await FileUtil.getDirRecursive(inDir);
+
+  // Explicitly filter out partials
+  scssFilenames = scssFilenames.filter((filename) => !/^src\/scss\/partials\//.test(filename));
+  scssFilenames = scssFilenames.map((filename) => filename.match(/^src\/scss\/(.+)/)[1]);
 
   // Render all the files found
   console.log('Rendering scss..\n');
@@ -55,16 +59,7 @@ const SCSS_EXTENSION_REGEX = /.scss$/;
     // Alter the scss filename to an css extension
     let filename = scssFilenames[index].replace(SCSS_EXTENSION_REGEX, '.css');
 
-    return new Promise((resolve, reject) => {
-      fs.writeFile(path.join(outDir, filename), css.css, (err) => {
-        if (err) {
-          console.log(err);
-          return reject(err);
-        }
-
-        resolve(err);
-      });
-    });
+    return FileUtil.makeFile(path.join(outDir, filename), css);
   });
   await Promise.all(writePromises);
 

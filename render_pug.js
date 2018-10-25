@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const pug = require('pug');
+const FileUtil = require('./lib/file-util.js');
 
 const PUG_EXTENSION_REGEX = /.pug$/;
 
@@ -31,7 +32,11 @@ const PUG_EXTENSION_REGEX = /.pug$/;
 
   // Get all pug files in the root of the inDir
   console.log('Getting filenames...\n');
-  let pugFilenames = fs.readdirSync(inDir).filter((file) => PUG_EXTENSION_REGEX.test(file));
+  let pugFilenames = await FileUtil.getDirRecursive(inDir);
+
+  // Explicitly filter out partials
+  pugFilenames = pugFilenames.filter((filename) => !/^src\/pug\/partials\//.test(filename));
+  pugFilenames = pugFilenames.map((filename) => filename.match(/^src\/pug\/(.+)/)[1]);
 
   if (pugFilenames.length === 0) {
     // There weren't any pug files. Abort
@@ -72,15 +77,7 @@ const PUG_EXTENSION_REGEX = /.pug$/;
     // Alter the pug filename to an html extension
     let filename = pugFilenames[index].replace(PUG_EXTENSION_REGEX, '.html');
 
-    return new Promise((resolve, reject) => {
-      fs.writeFile(path.join(outDir, filename), htmlString, (err) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(err);
-      });
-    });
+    return FileUtil.makeFile(path.join(outDir, filename), htmlString);
   });
   await Promise.all(writePromises);
 

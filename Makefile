@@ -30,4 +30,6 @@ image:
 
 # Performs all build tasks
 build: install clean scss ejs pug image
-	@echo Build Complete! Took $(shell expr $(shell date +%s) - $(START_TIME)) seconds
+
+# Performs all build tasks without installing anything
+build-noinstall: clean scss ejs pug image

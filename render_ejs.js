@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const ejs = require('ejs');
+const FileUtil = require('./lib/file-util.js');
 
 const EJS_EXTENSION_REGEX = /.ejs$/;
 
@@ -31,7 +32,11 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
 
   // Get all ejs files in the root of the inDir
   console.log('Getting filenames...\n');
-  let ejsFilenames = fs.readdirSync(inDir).filter((file) => EJS_EXTENSION_REGEX.test(file));
+  let ejsFilenames = await FileUtil.getDirRecursive(inDir);
+
+  // Explicitly filter out partials and strip out the base directory
+  ejsFilenames = ejsFilenames.filter((filename) => !/^src\/ejs\/partials\//.test(filename));
+  ejsFilenames = ejsFilenames.map((filename) => filename.match(/^src\/ejs\/(.+)/)[1]);
 
   if (ejsFilenames.length === 0) {
     // There weren't any ejs files. Abort
@@ -68,15 +73,7 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
     // Alter the ejs filename to an html extension
     let filename = ejsFilenames[index].replace(EJS_EXTENSION_REGEX, '.html');
 
-    return new Promise((resolve, reject) => {
-      fs.writeFile(path.join(outDir, filename), htmlString, (err) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(err);
-      });
-    });
+    return FileUtil.makeFile(path.join(outDir, filename), htmlString);
   });
   await Promise.all(writePromises);
 
