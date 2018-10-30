@@ -49,11 +49,11 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
 
   // Filter out non-css filenames and get files
   cssFilenames = cssFilenames.filter((filename) => FileUtil.getExtname(filename) === 'css');
-  let readPromises = cssFilenames.map((filename) => FileUtil.readFile(filename).then((buff) => {
+  let cssReadPromises = cssFilenames.map((filename) => FileUtil.readFile(filename).then((buff) => {
     // Automatically convert the buffer to a string
     return buff.toString();
   }));
-  let styleArray = await Promise.all(readPromises);
+  let styleArray = await Promise.all(cssReadPromises);
 
   // The style Array is, by definition, parallel to the cssFilenames array. Use this fact to organize the styles into
   // an object
@@ -66,10 +66,34 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
     styles[cssFilename] = style;
   });
 
+  // Get all the previously rendered scripts
+  console.log('Retrieving scripts...\n');
+  let jsFilenames = await FileUtil.getDirRecursive('./.pre_build');
+
+  // Filter out non-js filenames and get files
+  jsFilenames = jsFilenames.filter((filename) => FileUtil.getExtname(filename) === 'js');
+  let jsReadPromises = jsFilenames.map((filename) => FileUtil.readFile(filename).then((buff) => {
+    // Automatically convert the buffer to a string
+    return buff.toString();
+  }));
+  let scriptArray = await Promise.all(jsReadPromises);
+
+  // The script Array is, by definition, parallel to the jsFilenames array. Use this fact to organize the scripts into
+  // an object
+  let scripts = {};
+  scriptArray.forEach((script, index) => {
+    let jsFilename = jsFilenames[index];
+
+    // Split the js filename into its directories, removing the '.prebuild' dir, then join them back together again
+    jsFilename = jsFilename.split(path.sep).slice(1).join(path.sep);
+    scripts[jsFilename] = script;
+  });
+
   // Render all the files found
   console.log('Rendering EJS..\n');
+  let locals = {styles, scripts};
   let renderPromises = ejsFilenames.map((filename) => {
-    return ejs.renderFile(path.join(inDir, filename), {styles: styles}, ejsOptions);
+    return ejs.renderFile(path.join(inDir, filename), locals, ejsOptions);
   });
   let rendered = await Promise.all(renderPromises);
 

@@ -18,7 +18,8 @@ lint:
 scss:
 	node render_scss.js ./src/scss/ ./.pre_build/ ./config/scss_options.js
 
-# TODO: WebPack + Babble JavaScript
+webpack:
+	node render_js.js
 
 # Renders EJS into HTML
 ejs:
@@ -33,7 +34,7 @@ image:
 	cp images/ build/ -r
 
 # Performs all build tasks
-build: install lint clean scss ejs pug image
+build: install lint clean scss webpack ejs pug image
 
 # Performs all build tasks without installing anything
-build-noinstall: lint clean scss ejs pug image
+build-noinstall: lint clean scss webpack ejs pug image

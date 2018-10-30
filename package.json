@@ -1,14 +1,19 @@
 {
   "name": "trifoia-static-web",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "{{DESCRIPTION}}",
   "main": "index.js",
   "dependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "babel-loader": "^8.0.4",
+    "babel-polyfill": "^6.26.0",
     "ejs": "^2.6.1",
     "eslint": "^5.6.0",
     "eslint-config-google": "^0.10.0",
     "node-sass": "^4.9.3",
-    "pug": "^2.0.3"
+    "pug": "^2.0.3",
+    "webpack": "^4.23.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

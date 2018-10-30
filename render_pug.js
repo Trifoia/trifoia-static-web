@@ -66,10 +66,34 @@ const PUG_EXTENSION_REGEX = /.pug$/;
     styles[cssFilename] = style;
   });
 
+  // Get all the previously rendered scripts
+  console.log('Retrieving scripts...\n');
+  let jsFilenames = await FileUtil.getDirRecursive('./.pre_build');
+
+  // Filter out non-js filenames and get files
+  jsFilenames = jsFilenames.filter((filename) => FileUtil.getExtname(filename) === 'js');
+  let jsReadPromises = jsFilenames.map((filename) => FileUtil.readFile(filename).then((buff) => {
+    // Automatically convert the buffer to a string
+    return buff.toString();
+  }));
+  let scriptArray = await Promise.all(jsReadPromises);
+
+  // The script Array is, by definition, parallel to the jsFilenames array. Use this fact to organize the scripts into
+  // an object
+  let scripts = {};
+  scriptArray.forEach((script, index) => {
+    let jsFilename = jsFilenames[index];
+
+    // Split the js filename into its directories, removing the '.prebuild' dir, then join them back together again
+    jsFilename = jsFilename.split(path.sep).slice(1).join(path.sep);
+    scripts[jsFilename] = script;
+  });
+
   // Render all the files found
   console.log('Rendering PUG..\n');
   let renderPromises = pugFilenames.map(async (filename) => {
     pugOptions.styles = styles;
+    pugOptions.scripts = scripts;
     pugOptions.filename = filename;
 
     // All PUG operations are synchronous. The return value will automatically be wrapped in a promise result
