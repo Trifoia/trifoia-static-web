@@ -10,6 +10,8 @@ const SCSS_EXTENSION_REGEX = /.scss$/;
  * Node program is used to process scss and is highly configurable
  */
 (async function() {
+  console.log(`Rendering SCSS. Node version: ${process.version}`);
+  console.group();
   // Get arguments
   const inDir = process.argv[2];
   const outDir = process.argv[3];
@@ -63,5 +65,6 @@ const SCSS_EXTENSION_REGEX = /.scss$/;
   });
   await Promise.all(writePromises);
 
-  console.log('SCSS Rendering Complete!\n');
+  console.groupEnd();
+  console.log('SCSS Rendering Complete!');
 })();

@@ -39,6 +39,8 @@ class WebpackConfig {
 }
 
 (async () => {
+  console.log(`Rendering JS. Node version: ${process.version}`);
+  console.group();
   console.log('Getting Javascript files...\n');
   // Each file in the `js` directory (that is NOT in the `lib` folder) is packed into its own chunk
   let basePath = path.join(__dirname, 'src', 'js');
@@ -79,4 +81,6 @@ class WebpackConfig {
   console.group();
   stats.forEach((stat) => console.log(stat.toString({colors: true}), '\n'));
   console.groupEnd();
+  console.groupEnd();
+  console.log('JS Rendering Complete!');
 })();

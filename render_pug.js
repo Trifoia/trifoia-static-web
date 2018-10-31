@@ -10,6 +10,8 @@ const PUG_EXTENSION_REGEX = /.pug$/;
  * Node program is used to process pug and is highly configurable
  */
 (async function() {
+  console.log(`Rendering PUG. Node version: ${process.version}`);
+  console.group();
   // Get arguments
   const inDir = process.argv[2];
   const outDir = process.argv[3];
@@ -111,5 +113,6 @@ const PUG_EXTENSION_REGEX = /.pug$/;
   });
   await Promise.all(writePromises);
 
+  console.groupEnd();
   console.log('PUG Rendering Complete!\n');
 })();

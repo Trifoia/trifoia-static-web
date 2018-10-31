@@ -10,6 +10,8 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
  * Node program is used to process ejs and is highly configurable
  */
 (async function() {
+  console.log(`Rendering EJS. Node version: ${process.version}`);
+  console.group();
   // Get arguments
   const inDir = process.argv[2];
   const outDir = process.argv[3];
@@ -31,7 +33,14 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
 
   // Get all ejs files in the root of the inDir
   console.log('Getting filenames...\n');
-  let ejsFilenames = await FileUtil.getDirRecursive(inDir);
+  let ejsFilenames;
+  try {
+    ejsFilenames = await FileUtil.getDirRecursive(inDir);
+  } catch (e) {
+    // There was an error getting the files
+    console.warn(`Could not retrieve files. Error code: ${e.code}`);
+    return;
+  }
 
   // Explicitly filter out partials and strip out the base directory
   ejsFilenames = ejsFilenames.filter((filename) => !/^src\/ejs\/partials\//.test(filename));
@@ -107,5 +116,6 @@ const EJS_EXTENSION_REGEX = /.ejs$/;
   });
   await Promise.all(writePromises);
 
+  console.groupEnd();
   console.log('EJS Rendering Complete!\n');
 })();
