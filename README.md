@@ -35,12 +35,18 @@ files for more information
 |- .pre_build // Processed JS and SCSS saved here for debug purposes
 |- build      // Final html files saved here
 |- config     // Configuration files
-|- images     // Images used by the website - may have subdirectories
+|- lib        // Files that handle rendering
 |- src        // Source file directory
+  |- images     // Images used by the website
+  |- docs       // Documents used by the website
   |- ejs        // Raw EJS files
     |- partials   // EJS Partials that are not rendered directly
+  |- pug        // Raw PUG files
+    |- partials   // PUG partials that are not rendered directly
   |- js         // Raw Javascript files
+    |- lib        // JS files that are not rendered directly
   |- scss       // Raw SCSS files
+    |- partials   // SCSS Partials that are not rendered directly
 ```
 
 # Ultimate Framework Factory

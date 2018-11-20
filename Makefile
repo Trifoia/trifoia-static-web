@@ -1,4 +1,5 @@
 .PHONY: install clean scss js ejs build
+.DEFAULT_GOAL := build
 START_TIME = $(shell date +%s)
 
 # Installs node modules
@@ -16,18 +17,18 @@ lint:
 
 # Renders SCSS into CSS
 scss:
-	node render_scss.js ./src/scss/ ./.pre_build/ ./config/scss_options.js
+	node ./lib/render_scss.js ./src/scss/ ./.pre_build/ ../config/scss_options.js
 
 webpack:
-	node render_js.js
+	node ./lib/render_js.js
 
 # Renders EJS into HTML
 ejs:
-	node render_ejs.js ./src/ejs/ ./build/ ./config/ejs_options.js
+	node ./lib/render_ejs.js ./src/ejs/ ./build/ ../config/ejs_options.js
 
 # Renders PUG into HTML
 pug:
-	node render_pug.js ./src/pug/ ./build/ ./config/pug_options.js
+	node ./lib/render_pug.js ./src/pug/ ./build/ ../config/pug_options.js
 
 # Copies image files
 image:
