@@ -32,7 +32,7 @@ pug:
 
 # Copies image files
 image:
-	cp images/ build/ -r
+	cp src/images/ build/ -r
 
 # Performs all build tasks
 build: install lint clean scss webpack ejs pug image
